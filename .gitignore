@@ -1,0 +1,49 @@
+# Compiled Java class files
+*.class
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# IDE folders
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+
+# Build directories
+bin/
+build/
+out/
+target/
+
+# Maven
+.mvn/
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+
+# Database files (if using local database files)
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+
+# Java crash logs
+hs_err_pid*
