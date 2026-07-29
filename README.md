@@ -54,6 +54,27 @@ Daily Routine Project/
 5. Exit
 ```
 
+## 📷 Screenshots
+
+### Main Menu
+![Main Menu](screenshots/menu.png)
+
+### Add Task
+![Add Task](screenshots/add-task.png)
+
+### View Tasks
+![View Tasks](screenshots/view-tasks.png)
+
+### Edit Task
+![Edit Task](screenshots/edit-task.png)
+
+### Delete Task
+![Delete Task](screenshots/delete-task.png)
+
+### Reminder Notification
+![Reminder](screenshots/reminder.png)
+
+
 ---
 
 ## ⚙️ Installation

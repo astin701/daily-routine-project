@@ -1,58 +1,87 @@
 import java.sql.*;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.Set;
 import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 
 public class ReminderThread extends Thread {
 
+    // Keeps track of reminders already shown
+    private Set<Integer> startedTasks = new HashSet<>();
+    private Set<Integer> endedTasks = new HashSet<>();
+
     public void run() {
 
-        while(true) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-            try(
+        while (true) {
+
+            try (
                 Connection con = DBConnection.getConnection();
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery(
-                "SELECT * FROM tasks WHERE status='Pending'")
-            ){
+                        "SELECT * FROM tasks WHERE status='Pending'")
+            ) {
 
                 LocalTime now = LocalTime.now().withSecond(0).withNano(0);
 
-                while(rs.next()) {
+                while (rs.next()) {
 
                     int id = rs.getInt("id");
                     String task = rs.getString("task_name");
 
-                    Time startTime = rs.getTime("start_time");
-                    Time endTime = rs.getTime("end_time");
+                    LocalTime start = rs.getTime("start_time")
+                                        .toLocalTime()
+                                        .withSecond(0)
+                                        .withNano(0);
 
-                    LocalTime start = startTime.toLocalTime().withSecond(0);
-                    LocalTime end = endTime.toLocalTime().withSecond(0);
+                    LocalTime end = rs.getTime("end_time")
+                                      .toLocalTime()
+                                      .withSecond(0)
+                                      .withNano(0);
 
-                    // START REMINDER
-                    if((now.equals(start) || now.isAfter(start)) && now.isBefore(end)) {
+                    // Debug Output
+                    System.out.println("--------------------------------");
+                    System.out.println("Current Time : " + now.format(formatter));
+                    System.out.println("Start Time   : " + start.format(formatter));
+                    System.out.println("End Time     : " + end.format(formatter));
 
-                        System.out.println("\nSTART TASK: " + task);
+                    // START REMINDER (Only Once)
+                    if (!startedTasks.contains(id)
+                            && (now.equals(start) || now.isAfter(start))
+                            && now.isBefore(end)) {
+
+                        startedTasks.add(id);
+
+                        Toolkit.getDefaultToolkit().beep();
 
                         JOptionPane.showMessageDialog(
                                 null,
-                                "Start Task: " + task
+                                "🔔 Start Task\n\n"
+                                + "Task : " + task
+                                + "\nTime : " + start.format(formatter),
+                                "Task Reminder",
+                                JOptionPane.INFORMATION_MESSAGE
                         );
-
-                        Toolkit.getDefaultToolkit().beep();
                     }
 
-                    if(now.equals(end)) {
+                    // END REMINDER (Only Once)
+                    if (!endedTasks.contains(id)
+                            && (now.equals(end) || now.isAfter(end))) {
 
-                        System.out.println("\nEND TIME: " + task);
+                        endedTasks.add(id);
 
                         Toolkit.getDefaultToolkit().beep();
 
-                        String[] options = {"Done","Skipped"};
+                        String[] options = {"Done", "Skipped"};
 
                         int choice = JOptionPane.showOptionDialog(
                                 null,
-                                "Task Finished: " + task,
+                                "⏰ Task Finished\n\n"
+                                + "Task : " + task
+                                + "\nEnd Time : " + end.format(formatter),
                                 "Reminder",
                                 JOptionPane.DEFAULT_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE,
@@ -61,41 +90,36 @@ public class ReminderThread extends Thread {
                                 options[0]
                         );
 
-                        if(choice == 0) {
-                            updateStatus(id,"Done");
-                        }
-
-                        if(choice == 1) {
-                            updateStatus(id,"Skipped");
+                        if (choice == 0) {
+                            updateStatus(id, "Done");
+                        } else if (choice == 1) {
+                            updateStatus(id, "Skipped");
                         }
                     }
                 }
 
                 Thread.sleep(1000);
 
-            } catch(Exception e) {
-
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    void updateStatus(int id,String status) {
+    private void updateStatus(int id, String status) {
 
-        try(
+        try (
             Connection con = DBConnection.getConnection();
-            PreparedStatement ps =
-            con.prepareStatement(
-            "UPDATE tasks SET status=? WHERE id=?")
-        ){
+            PreparedStatement ps = con.prepareStatement(
+                    "UPDATE tasks SET status=? WHERE id=?")
+        ) {
 
-            ps.setString(1,status);
-            ps.setInt(2,id);
+            ps.setString(1, status);
+            ps.setInt(2, id);
 
             ps.executeUpdate();
 
-        } catch(Exception e) {
-
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
