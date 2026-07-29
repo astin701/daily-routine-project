@@ -1,5 +1,4 @@
 import java.util.Scanner;
-
 public class MainApp {
 
     public static void main(String[] args) {
@@ -19,7 +18,6 @@ public class MainApp {
             System.out.println("3 Edit Task");
             System.out.println("4 Delete Task");
             System.out.println("5 Exit");
-
 
             System.out.print("Enter Your Choice :");
             int choice = sc.nextInt();
